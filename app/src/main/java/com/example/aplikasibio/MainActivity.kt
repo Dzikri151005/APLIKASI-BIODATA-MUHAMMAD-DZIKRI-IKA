@@ -7,7 +7,9 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Person
@@ -47,7 +49,7 @@ fun MainScreen() {
     Scaffold(
         bottomBar = {
             NavigationBar(
-                containerColor = Color.White.copy(alpha = 0.8f),
+                containerColor = Color.White.copy(alpha = 0.9f),
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(60.dp)
@@ -92,7 +94,7 @@ fun MainScreen() {
 @Composable
 fun BiodataScreen() {
     Box(modifier = Modifier.fillMaxSize()) {
-        // Gambar Latar Belakang
+        // Background image
         Image(
             painter = rememberAsyncImagePainter("https://images.unsplash.com/photo-1522071820081-009f0129c71c?fit=crop&w=1200&h=800"),
             contentDescription = null,
@@ -100,15 +102,18 @@ fun BiodataScreen() {
             contentScale = ContentScale.Crop
         )
 
-        // Overlay putih transparan agar teks lebih terbaca
-        Box(modifier = Modifier
-            .fillMaxSize()
-            .background(Color(0xAAFFFFFF))
+        // Semi-transparent white overlay
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color(0xAAFFFFFF))
         )
 
+        // Scrollable content
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .verticalScroll(rememberScrollState())
                 .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Top
@@ -130,12 +135,10 @@ fun BiodataScreen() {
                 contentScale = ContentScale.Crop
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
-
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .alpha(0.85f),
+                    .alpha(0.9f),
                 shape = RoundedCornerShape(16.dp),
                 colors = CardDefaults.cardColors(containerColor = Color.White)
             ) {
@@ -151,14 +154,27 @@ fun BiodataScreen() {
                         modifier = Modifier.padding(bottom = 12.dp)
                     )
                     InfoText("📅 Tanggal Lahir:", "15 Oktober 2025")
-                    InfoText("📍 Alamat:", "Kp. Muruy, Ds. Mandalasari,Pandeglang, Banten")
+                    InfoText("📍 Alamat:", "Kp. Muruy, Ds. Mandalasari, Pandeglang, Banten")
                     InfoText("💼 Pekerjaan:", "Guru")
                     InfoText("🎯 Hobi:", "Jalan-jalan, Gym, Olahraga")
+
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    Text(
+                        text = "📚 Riwayat Pendidikan",
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = Color.Black,
+                        modifier = Modifier.padding(bottom = 12.dp)
+                    )
+                    InfoText("🧒 SD:", "SDN Mandalasari 1")
+                    InfoText("👦 MTS:", "MTS Dahuci")
+                    InfoText("🧑 MAS:", "MAS Dahuci")
 
                     Spacer(modifier = Modifier.height(16.dp))
 
                     Button(
-                        onClick = { /* TODO */ },
+                        onClick = { /* TODO: aksi tombol */ },
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(50.dp),
@@ -172,6 +188,8 @@ fun BiodataScreen() {
                     }
                 }
             }
+
+            Spacer(modifier = Modifier.height(60.dp))
         }
     }
 }
