@@ -7,13 +7,16 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -38,20 +41,20 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen() {
-    var selectedItem by remember { mutableStateOf(0) }
-    val items = listOf("Biodata", "Tambah Pesan", "Hubungi")
+    var selectedItem by rememberSaveable { mutableStateOf(0) }
+    var showDetail by rememberSaveable { mutableStateOf(false) }
 
     Scaffold(
         bottomBar = {
             NavigationBar(
-                containerColor = Color.White.copy(alpha = 0.8f),
+                containerColor = Color.White.copy(alpha = 0.9f),
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(60.dp)
             ) {
+                val items = listOf("Biodata", "Tambah Pesan", "Hubungi")
                 items.forEachIndexed { index, item ->
                     NavigationBarItem(
                         icon = {
@@ -63,7 +66,10 @@ fun MainScreen() {
                         },
                         label = { Text(item) },
                         selected = selectedItem == index,
-                        onClick = { selectedItem = index },
+                        onClick = {
+                            showDetail = false // reset saat berpindah tab
+                            selectedItem = index
+                        },
                         colors = NavigationBarItemDefaults.colors(
                             selectedIconColor = MaterialTheme.colorScheme.primary,
                             selectedTextColor = MaterialTheme.colorScheme.primary,
@@ -80,19 +86,22 @@ fun MainScreen() {
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            when (selectedItem) {
-                0 -> BiodataScreen()
-                1 -> AddMessageScreen()
-                2 -> ContactScreen()
+            if (showDetail) {
+                DetailScreen(onBack = { showDetail = false })
+            } else {
+                when (selectedItem) {
+                    0 -> BiodataScreen(onDetailClick = { showDetail = true })
+                    1 -> AddMessageScreen()
+                    2 -> ContactScreen()
+                }
             }
         }
     }
 }
 
 @Composable
-fun BiodataScreen() {
+fun BiodataScreen(onDetailClick: () -> Unit) {
     Box(modifier = Modifier.fillMaxSize()) {
-        // Gambar Latar Belakang
         Image(
             painter = rememberAsyncImagePainter("https://images.unsplash.com/photo-1522071820081-009f0129c71c?fit=crop&w=1200&h=800"),
             contentDescription = null,
@@ -100,15 +109,16 @@ fun BiodataScreen() {
             contentScale = ContentScale.Crop
         )
 
-        // Overlay putih transparan agar teks lebih terbaca
-        Box(modifier = Modifier
-            .fillMaxSize()
-            .background(Color(0xAAFFFFFF))
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color(0xAAFFFFFF))
         )
 
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .verticalScroll(rememberScrollState())
                 .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Top
@@ -130,12 +140,10 @@ fun BiodataScreen() {
                 contentScale = ContentScale.Crop
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
-
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .alpha(0.85f),
+                    .alpha(0.9f),
                 shape = RoundedCornerShape(16.dp),
                 colors = CardDefaults.cardColors(containerColor = Color.White)
             ) {
@@ -143,35 +151,87 @@ fun BiodataScreen() {
                     modifier = Modifier.padding(24.dp),
                     horizontalAlignment = Alignment.Start
                 ) {
-                    Text(
-                        text = "📌 Informasi Pribadi",
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = Color.Black,
-                        modifier = Modifier.padding(bottom = 12.dp)
-                    )
+                    Text("📌 Informasi Pribadi", fontSize = 20.sp, fontWeight = FontWeight.SemiBold)
                     InfoText("📅 Tanggal Lahir:", "15 Oktober 2025")
-                    InfoText("📍 Alamat:", "Kp. Muruy, Ds. Mandalasari,Pandeglang, Banten")
+                    InfoText("📍 Alamat:", "Kp. Muruy, Ds. Mandalasari, Pandeglang, Banten")
                     InfoText("💼 Pekerjaan:", "Guru")
                     InfoText("🎯 Hobi:", "Jalan-jalan, Gym, Olahraga")
+
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    Text("📚 Riwayat Pendidikan", fontSize = 20.sp, fontWeight = FontWeight.SemiBold)
+                    InfoText("🧒 SD:", "SDN Mandalasari 1")
+                    InfoText("👦 MTS:", "MTS Dahuci")
+                    InfoText("🧑 MAS:", "MAS Dahuci")
 
                     Spacer(modifier = Modifier.height(16.dp))
 
                     Button(
-                        onClick = { /* TODO */ },
+                        onClick = onDetailClick,
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(50.dp),
                         shape = RoundedCornerShape(12.dp)
                     ) {
-                        Text(
-                            text = "Lihat Detail",
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.Medium
-                        )
+                        Text("Lihat Detail", fontSize = 18.sp, fontWeight = FontWeight.Medium)
                     }
                 }
             }
+
+            Spacer(modifier = Modifier.height(60.dp))
+        }
+    }
+}
+
+@Composable
+fun DetailScreen(onBack: () -> Unit) {
+    val imageUrls = listOf(
+        "https://source.unsplash.com/400x300/?travel",
+        "https://source.unsplash.com/400x300/?gym",
+        "https://source.unsplash.com/400x300/?sports"
+    )
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0xFFF0F0F0))
+            .padding(24.dp)
+            .verticalScroll(rememberScrollState()),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            text = "✨ Kegiatan Favorit ✨",
+            fontSize = 24.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color(0xFF388E3C),
+            modifier = Modifier.padding(bottom = 16.dp)
+        )
+
+        imageUrls.forEach { url ->
+            Image(
+                painter = rememberAsyncImagePainter(url),
+                contentDescription = "Foto Hobi",
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(180.dp)
+                    .padding(vertical = 8.dp),
+                contentScale = ContentScale.Crop
+            )
+        }
+
+        Spacer(modifier = Modifier.height(20.dp))
+
+        Text(
+            text = "Teruslah belajar dan jangan mudah menyerah! 💪",
+            fontSize = 18.sp,
+            color = Color.DarkGray,
+            fontWeight = FontWeight.Medium
+        )
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        Button(onClick = onBack) {
+            Text("⬅ Kembali")
         }
     }
 }
@@ -186,21 +246,15 @@ fun InfoText(label: String, value: String) {
 
 @Composable
 fun AddMessageScreen() {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(text = "Halaman Tambah Pesan (Belum Diimplementasikan)", fontSize = 20.sp)
+    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        Text("Halaman Tambah Pesan (Belum Diimplementasikan)", fontSize = 20.sp)
     }
 }
 
 @Composable
 fun ContactScreen() {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(text = "Halaman Hubungi (Belum Diimplementasikan)", fontSize = 20.sp)
+    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        Text("Halaman Hubungi (Belum Diimplementasikan)", fontSize = 20.sp)
     }
 }
 
